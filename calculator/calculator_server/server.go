@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -22,6 +23,49 @@ func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculat
 	}
 
 	return result, nil
+}
+
+func (*server) PrimeNumberDecomp(req *calculatorpb.PrimeNumberDecompRequest, stream calculatorpb.CalculatorService_PrimeNumberDecompServer) error {
+	fmt.Printf("Received PrimeNumberDecomp: %v", req)
+
+	number := req.GetNumber()
+	divisor := int64(2)
+
+	for number < 1 {
+		if number%int64(divisor) == 0 {
+			stream.Send(&calculatorpb.PrimeNumberDecompResponse{
+				PrimeFactor: divisor,
+			})
+			number = number / divisor
+		} else {
+			divisor++
+			fmt.Printf("Divisor increased to %v", divisor)
+		}
+	}
+
+	return nil
+}
+
+func (*server) ComputerAverage(stream calculatorpb.CalculatorService_ComputerAverageServer) error {
+	fmt.Printf("Received ComputerAverage RPC\n")
+
+	sum := int32(0)
+	count := 0
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			average := float64(sum) / float64(count)
+			stream.SendAndClose(&calculatorpb.ComputerAverageResponse{
+				Average: average,
+			})
+		}
+		if err != nil {
+			log.Fatalf("Error while reading client stream: %v", err)
+		}
+		sum += req.GetNumber()
+		count++
+	}
 }
 
 func main() {
