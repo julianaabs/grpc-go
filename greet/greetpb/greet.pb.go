@@ -713,6 +713,7 @@ type GreetServiceClient interface {
 	GreetManyTimes(ctx context.Context, in *GreetManyTimesRequest, opts ...grpc.CallOption) (GreetService_GreetManyTimesClient, error)
 	// Client Streaming
 	LongGreet(ctx context.Context, opts ...grpc.CallOption) (GreetService_LongGreetClient, error)
+	// BiDirectional Streaming
 	GreetEveryone(ctx context.Context, opts ...grpc.CallOption) (GreetService_GreetEveryoneClient, error)
 }
 
@@ -838,6 +839,7 @@ type GreetServiceServer interface {
 	GreetManyTimes(*GreetManyTimesRequest, GreetService_GreetManyTimesServer) error
 	// Client Streaming
 	LongGreet(GreetService_LongGreetServer) error
+	// BiDirectional Streaming
 	GreetEveryone(GreetService_GreetEveryoneServer) error
 }
 

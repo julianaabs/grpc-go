@@ -8,6 +8,8 @@ import (
 
 	"github.com/julianaabs/grpc-go/calculator/calculatorpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -84,4 +86,33 @@ func doClientStreaming(c calculatorpb.CalculatorServiceClient) {
 	}
 
 	fmt.Printf("The average is %v", res)
+}
+
+func doErrorUnary(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("SquarRoot unary rpc...")
+
+	doErrorCall(c, 12)
+
+	doErrorCall(c, -2)
+
+}
+
+func doErrorCall(c calculatorpb.CalculatorServiceClient, n int32) {
+	number := int32(0)
+	res, err := c.SquareRoot(context.Background(), &calculatorpb.SquareRootRequest{Number: 10})
+
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			fmt.Println(respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("Negative number")
+			}
+		} else {
+			log.Fatalf("Big error calling squareroot: %v", err)
+		}
+	}
+	fmt.Println("Result of square root of %v: %v", number, res.GetNumberRoot())
+
 }
